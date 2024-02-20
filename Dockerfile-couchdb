@@ -1,0 +1,15 @@
+FROM couchdb:latest
+
+# Install dependencies for the script to add data into db(e.g., Python, pip, PyYAML)
+RUN apt-get update && apt-get install -y python3 python3-pip && pip3 install PyYAML
+
+
+# Copy the scripts into the image
+COPY ./couchdb/data.sh /data.sh
+COPY ./couchdb/entrypoint.sh /entrypoint.sh
+
+# Make sure the scripts are executable
+RUN chmod +x /data.sh /entrypoint.sh
+
+# Set the new entrypoint
+ENTRYPOINT ["/entrypoint.sh"]

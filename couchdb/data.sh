@@ -21,6 +21,8 @@ echo "Building $dbname DB"
 sleep 5
 echo "curl -X PUT http://$username:$password@localhost:5984/$dbname"
 curl -X PUT "http://$username:$password@localhost:5984/$dbname"
+echo "Manually add _users database"
+curl -X PUT "http://$username:$password@localhost:5984/_users"
 
 echo "converting all Envoy configs to json files"
 pushd $configDir > /dev/null

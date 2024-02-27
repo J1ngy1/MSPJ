@@ -1,0 +1,70 @@
+receivers:
+  otlp:
+    protocols:
+      #http:
+      grpc:
+        endpoint: 0.0.0.0:4319 # this causes otel collector to listen on port 4319 we do this because jaeger uses the default 4317
+  #statsd:
+  #  endpoint: 0.0.0.0:8125
+  #  aggregation_interval: 1s
+  #  enable_metric_type: true
+  #  is_monotonic_counter: true #false
+  #  #timer_histogram_mapping:
+  #  #  - statsd_type: "histogram"
+  #  #    observer_type: "gauge"
+  #  #  - statsd_type: "timer"
+  #  #    observer_type: "gauge"
+  #  #  - statsd_type: "timing"
+  #  #    observer_type: "histogram"
+  #  #    histogram:
+  #  #      max_size: 100
+  #  #  - statsd_type: "distribution"
+  #  #    observer_type: "histogram"
+  #  #    histogram:
+  #  #      max_size: 50
+
+exporters:
+  logging:
+    loglevel: debug
+
+  otlp/jaeger:
+    #endpoint: 192.168.1.13:4317
+    endpoint: 0.0.0.0:4317
+    tls:
+      insecure: true
+
+ # Data sources: metrics
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    #endpoint: 192.168.13.1:8889
+    namespace: "imo"
+    send_timestamps: true
+    metric_expiration: 180m
+    enable_open_metrics: true
+    resource_to_telemetry_conversion:
+      enabled: true
+
+processors:
+  batch:
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/jaeger]
+      #exporters: [logging, otlp/jaeger]
+    metrics:
+      #receivers: [otlp, statsd]
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
+      #exporters: [logging, prometheus]

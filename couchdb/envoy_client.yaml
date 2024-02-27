@@ -3,6 +3,7 @@ static_resources:
   - name: listen_client
     address:
       socket_address:
+        protocol: TCP
         address: 0.0.0.0
         port_value: 10000
     filter_chains:
@@ -36,13 +37,13 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
           codec_type: AUTO
-          stat_prefix: l_nginx_http1_unreliable
+          stat_prefix: tcp_rtr0_nginx_http1_unreliable
           http_protocol_options:
             allow_chunked_length: true
           route_config:
             name: local_route
             virtual_hosts:
-            - name: backend
+            - name: backend_unreliable
               domains:
               - "*"
               routes:
@@ -57,13 +58,13 @@ static_resources:
                       num_retries: 4
                       per_try_timeout: 180s                
                   cluster: envoy_server
+          http_filters:
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
   - name: envoy_server
-    #connect_timeout: 5s
     # type: STATIC
     type: LOGICAL_DNS
     lb_policy: ROUND_ROBIN

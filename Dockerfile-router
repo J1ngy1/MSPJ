@@ -1,0 +1,8 @@
+FROM ubuntu:22.04
+RUN apt-get update && apt-get install -y iproute2
+COPY ./router/set-routes.sh /usr/local/bin/set-routes.sh
+RUN chmod +x /usr/local/bin/set-routes.sh
+CMD ["/usr/local/bin/set-routes.sh"]
+
+RUN echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+CMD ["tail", "-f", "/dev/null"]

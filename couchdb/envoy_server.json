@@ -1,0 +1,131 @@
+{
+    "static_resources": {
+        "listeners": [
+            {
+                "name": "listen_server",
+                "address": {
+                    "socket_address": {
+                        "protocol": "TCP",
+                        "address": "0.0.0.0",
+                        "port_value": 18080
+                    }
+                },
+                "filter_chains": [
+                    {
+                        "transport_socket": {
+                            "name": "envoy.transport_sockets.tls",
+                            "typed_config": {
+                                "@type": "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext",
+                                "common_tls_context": {
+                                    "tls_certificates": [
+                                        {
+                                            "certificate_chain": {
+                                                "filename": "/etc/envoy/cert.pem"
+                                            },
+                                            "private_key": {
+                                                "filename": "/etc/envoy/key.pem"
+                                            }
+                                        }
+                                    ],
+                                    "alpn_protocols": [
+                                        "h2,http/1.1"
+                                    ]
+                                }
+                            }
+                        },
+                        "filters": [
+                            {
+                                "name": "envoy.filters.network.http_connection_manager",
+                                "typed_config": {
+                                    "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
+                                    "access_log": [
+                                        {
+                                            "name": "envoy.access_loggers.stdout",
+                                            "typed_config": {
+                                                "@type": "type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog"
+                                            }
+                                        }
+                                    ],
+                                    "codec_type": "AUTO",
+                                    "stat_prefix": "tcp_rtr0_nginx_http1_unreliable",
+                                    "http_protocol_options": {
+                                        "allow_chunked_length": true
+                                    },
+                                    "route_config": {
+                                        "name": "local_route",
+                                        "virtual_hosts": [
+                                            {
+                                                "name": "backend_unreliable",
+                                                "domains": [
+                                                    "*"
+                                                ],
+                                                "routes": [
+                                                    {
+                                                        "match": {
+                                                            "prefix": "/"
+                                                        },
+                                                        "route": {
+                                                            "timeout": "0s",
+                                                            "idle_timeout": "0s",
+                                                            "retry_policy": {
+                                                                "retry_on": "5xx,refused-stream,connect-failure,gateway-error,reset",
+                                                                "num_retries": 4,
+                                                                "per_try_timeout": "180s"
+                                                            },
+                                                            "cluster": "nginx_server"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "http_filters": [
+                                        {
+                                            "name": "envoy.filters.http.router",
+                                            "typed_config": {
+                                                "@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "clusters": [
+            {
+                "name": "nginx_server",
+                "type": "LOGICAL_DNS",
+                "lb_policy": "ROUND_ROBIN",
+                "http2_protocol_options": {},
+                "load_assignment": {
+                    "cluster_name": "nginx_server",
+                    "endpoints": [
+                        {
+                            "lb_endpoints": [
+                                {
+                                    "endpoint": {
+                                        "address": {
+                                            "socket_address": {
+                                                "address": "nginx",
+                                                "port_value": 443
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "transport_socket": {
+                    "name": "envoy.transport_sockets.tls",
+                    "typed_config": {
+                        "@type": "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext"
+                    }
+                }
+            }
+        ]
+    }
+}

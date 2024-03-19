@@ -1,29 +1,17 @@
-# my global config
 global:
-  scrape_interval:     1s # By default, scrape targets every 15 seconds.
-  scrape_timeout:      1s # By default, scrape targets every 15 seconds.
-
-  # Attach these labels to any time series or alerts when communicating with
-  # external systems (federation, remote storage, Alertmanager).
-  external_labels:
-    monitor: 'onltest-monitor'
+  scrape_interval:     1s
+  evaluation_interval: 1s
 
 rule_files:
-        #- 'prometheus.rules.yml'
+  # - "first.rules"
+  # - "second.rules"
 
-# A scrape configuration containing exactly one endpoint to scrape:
-# Here it's Prometheus itself.
 scrape_configs:
-  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-  - job_name: 'prometheus'
-
-    # Override the global default and scrape targets from this job every 5 seconds.
-    scrape_interval: 10s
-
+  - job_name: prometheus
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'otlp'
+  - job_name: 'otlp_imo'
     static_configs:
-      - targets: ['otlp:8888'] # replace 192.168.1.13 with ip address of otel collector
-      # - targets: ['192.168.1.13:8889'] # replace 192.168.1.13 with ip address of otel collector
+      - targets: ['otelcol:8888']
+      - targets: ['otelcol:8889']

@@ -22,3 +22,7 @@ scrape_configs:
     metrics_path: "/stats/prometheus"
     static_configs:
       - targets: ['envoy-server:9001']
+  - job_name: 'otlp'
+    static_configs:
+      - targets: ['otlp:8888']
+      - targets: ['otlp:8889']

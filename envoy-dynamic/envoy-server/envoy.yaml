@@ -4,12 +4,12 @@ node:
   metadata:
     secretKey: server_pass
 
-# stats_flush_interval: 0.5s
+stats_flush_interval: 0.5s
 
-# stats_config:
-#   stats_tags:
-#   - tag_name: envoy_server
-#     fixed_value: test
+stats_config:
+  stats_tags:
+  - tag_name: envoy
+    fixed_value: envoy_server
 
 # layered_runtime:
 #   layers:
@@ -20,15 +20,15 @@ node:
 #           listener:
 #             example_listener_name:
 #               connection_limit: 10000
-# stats_sinks:
-#   - name: envoy.stat_sinks.open_telemetry
-#     typed_config:
-#       "@type": type.googleapis.com/envoy.extensions.stat_sinks.open_telemetry.v3.SinkConfig
-#       grpc_service:
-#         envoy_grpc:
-#           cluster_name: otlp_stats
-#         timeout: 1s
-#       emit_tags_as_attributes: true
+stats_sinks:
+  - name: envoy.stat_sinks.open_telemetry
+    typed_config:
+      "@type": type.googleapis.com/envoy.extensions.stat_sinks.open_telemetry.v3.SinkConfig
+      grpc_service:
+        envoy_grpc:
+          cluster_name: otlp_stats
+        timeout: 1s
+      emit_tags_as_attributes: true
 
 admin:
   address:
@@ -89,21 +89,21 @@ static_resources:
               interval: 30s
               timeout: 5s
 
-  # - name: otlp_stats
-  #   connect_timeout: 5s
-  #   type: LOGICAL_DNS
-  #   typed_extension_protocol_options:
-  #     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-  #       "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-  #       explicit_http_config:
-  #         http2_protocol_options: {}
-  #   load_assignment:
-  #     cluster_name: otlp_stats
-  #     endpoints:
-  #     - lb_endpoints:
-  #       - endpoint:
-  #           address:
-  #             socket_address:
-  #               address: otlp #replace with the address of otel-collector
-  #               port_value: 4319
+  - name: otlp_stats
+    connect_timeout: 5s
+    type: LOGICAL_DNS
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
+    load_assignment:
+      cluster_name: otlp_stats
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: otelcol #replace with the address of otel-collector
+                port_value: 4317
 

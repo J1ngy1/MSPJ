@@ -1,4 +1,11 @@
 version: '3.8'
+
+x-default-logging: &logging
+  driver: "json-file"
+  options:
+    max-size: "5m"
+    max-file: "2"
+
 services:
 
   couchdb:
@@ -47,7 +54,7 @@ services:
 
 
   envoy-client:
-    image: envoyproxy/envoy:v1.19.1
+    image: envoyproxy/envoy:v1.29-latest
     depends_on:
       - envoy-controller
       - couchdb
@@ -66,7 +73,8 @@ services:
 
 
   envoy-server:
-    image: envoyproxy/envoy:v1.19.1
+    image: envoyproxy/envoy:v1.29-latest
+    #image: bitnami/envoy:latest
     depends_on:
       - envoy-controller
       - couchdb
@@ -84,36 +92,12 @@ services:
       # - server_network
 
 
-  # envoy-client:
-  #   image: envoyproxy/envoy:v1.19.1
-  #   volumes:
-  #     - ./envoy-static/envoy-client/envoy.yaml:/etc/envoy/envoy.yaml
-  #     - ./envoy-static/envoy-client/cert.pem:/etc/envoy/cert.pem
-  #     - ./envoy-static/envoy-client/key.pem:/etc/envoy/key.pem
-  #   ports:
-  #     - "9901:9901"
-  #     - "10000:10000/tcp"
-  #     # - "10000:10000/udp"
-  #   networks:
-  #     - app-network
-
-  # envoy-server:
-  #   image: envoyproxy/envoy:v1.19.1
-  #   volumes:
-  #     - ./envoy-static/envoy-server/envoy.yaml:/etc/envoy/envoy.yaml
-  #     - ./envoy-static/envoy-server/cert.pem:/etc/envoy/cert.pem
-  #     - ./envoy-static/envoy-server/key.pem:/etc/envoy/key.pem
-  #   ports:
-  #     - "9001:9001"
-  #     - "18080:18080/tcp"
-  #     # - "18080:18080/udp"
-  #   networks:
-  #     - app-network
 
   nginx:
     image: nginx:latest
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/testFiles/:/usr/share/nginx/html/
       - ./nginx/cert.pem:/etc/nginx/cert.pem
       - ./nginx/key.pem:/etc/nginx/key.pem
     ports:
@@ -126,7 +110,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus_otel.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     networks:
@@ -146,18 +130,30 @@ services:
       - app-network
       # - server_network
 
-  # otlp:
-  #   image: otel/opentelemetry-collector:latest
-  #   ports:
-  #     - "8889:8889"
-  #     - "8888:8888"
-  #     - "4317:4317"
+  otelcol:
+    image: otel/opentelemetry-collector:latest
+    ports:
+   #    - "8889:8889"
+   #   - "8888:8888"
+   #   - "4317:4317"
   #     - "4318:4318"
-  #     - "4319:4319"
-  #   volumes:
-  #     - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
-  #   networks:
-  #     - app-network
+      - "4319:4319"
+
+    command: [ "--config=/etc/otelcol/config.yaml"]
+    logging: *logging
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
+    networks:
+      - app-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      #- "4317:4317"
+      - "16686:16686"
+      #- "14250:14250"
+    networks:
+      - app-network
 
   ubuntu-curl:
     build:

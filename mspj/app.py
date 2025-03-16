@@ -56,14 +56,19 @@ def home():
     except Exception as e:
         print(f"❌ [ERROR] Error listing YAML files: {str(e)}")
         return f"Error listing YAML files: {str(e)}"
+    
+def get_full_path(file_path):
+    """ 确保所有文件路径相对于 /app/ 目录 """
+    return os.path.join(DOCKER_COMPOSE_PATH, file_path.lstrip("/"))
 
   
 @app.route('/generate-config-from-view/<path:file_path>', methods=['POST'])
 def generate_config_from_view(file_path):
     try:
         # Define the directory to search for YAML files
-        directory = os.path.dirname(DOCKER_COMPOSE_PATH)
-        full_path = os.path.join(directory, file_path)
+        full_path = get_full_path(file_path)
+        print(f"✅ [DEBUG] Full path for YAML file: {full_path}")  # Debugging
+        
 
         # Load the content of the selected YAML file (current config)
         with open(full_path, 'r') as f:
@@ -139,7 +144,7 @@ def view_yaml(file_path):
 def list_yaml_files():
     try:
         # Define the directory to search
-        directory = os.path.dirname(DOCKER_COMPOSE_PATH)
+        directory = DOCKER_COMPOSE_PATH
         
         # Use glob to search recursively for all .yml and .yaml files
         yaml_files = glob.glob(os.path.join(directory, '**/*.yml'), recursive=True)
@@ -157,7 +162,7 @@ def list_yaml_files():
 def view_config():
     try:
         # Define the directory to search (DOCKER_COMPOSE_PATH is the parent folder)
-        directory = os.path.dirname(DOCKER_COMPOSE_PATH)
+        directory = DOCKER_COMPOSE_PATH
         
         # Use glob to search recursively for all .yml and .yaml files
         yaml_files = glob.glob(os.path.join(directory, '**/*.yml'), recursive=True)
@@ -257,7 +262,8 @@ def confirm_update():
         version_name = None
 
     # Save the configuration version in the file's dedicated history folder
-    file_path = os.path.join(DOCKER_COMPOSE_PATH, file_name)
+    file_path = os.path.join(DOCKER_COMPOSE_PATH, file_name.lstrip("/"))
+
     try:
         with open(file_path, 'r') as file:
             old_config = file.read()
@@ -285,7 +291,7 @@ def confirm_update():
 
 def save_config_version(config, version_name, file_name):
     # Get the directory where the main configuration file is located
-    base_directory = os.path.dirname(DOCKER_COMPOSE_PATH)
+    base_directory = DOCKER_COMPOSE_PATH.rstrip('/')  
 
         # Extract directory and filename separately
     file_dir = os.path.dirname(file_name)  # e.g., envoy-dynamic/envoy-server
@@ -318,7 +324,7 @@ def view_history(file_path):
     print(f"view_history function called with file_path: {file_path}")  # Debugging output
     try:
         # Define the base directory and history path
-        directory = os.path.dirname(DOCKER_COMPOSE_PATH)
+        directory = DOCKER_COMPOSE_PATH
         history_dir = os.path.join(directory, 'history', file_path)
 
         print(f"Checking history directory at: {history_dir}")  # Debugging output
@@ -355,7 +361,8 @@ def view_history(file_path):
 
 @app.route('/revert-history/<filename>')
 def revert_history(filename):
-    history_dir = os.path.join(os.path.dirname(DOCKER_COMPOSE_PATH), 'history')
+    base_directory = DOCKER_COMPOSE_PATH.rstrip('/')  # 确保不会多余 '/'
+    history_dir = os.path.join(base_directory, 'history')
     file_path = os.path.join(history_dir, filename)
 
     try:
@@ -372,8 +379,8 @@ def revert_history(filename):
 def view_history_file(file_path, version):
     try:
         # Ensure correct base directory
-        base_history_dir = os.path.join(os.path.dirname(DOCKER_COMPOSE_PATH), 'history')
-
+        base_directory = DOCKER_COMPOSE_PATH.rstrip('/')  # 确保不会多余 '/'
+        base_history_dir = os.path.join(base_directory, 'history')
         # Construct correct history file path
         history_file_path = os.path.join(base_history_dir, file_path, version)
 
@@ -415,7 +422,7 @@ def view_history_file(file_path, version):
 def restore_version(file_path, version):
     try:
         # Base directory
-        base_directory = os.path.dirname(DOCKER_COMPOSE_PATH)
+        base_directory = DOCKER_COMPOSE_PATH.rstrip('/') 
 
         # Path to the version file in the history folder
         version_file_path = os.path.join(base_directory, 'history', file_path, version)
@@ -461,8 +468,8 @@ def get_chatgpt_generated_config(prompt, current_config=""):
 def update_config_file(file_path, updated_config):
     try:
         # Construct the full path to the file
-        full_path = os.path.join('/Users/shu/Downloads/IMO-Sidecar-Networking-main', file_path)
-
+        full_path = get_full_path(file_path)
+        print(f"✅ [DEBUG] Writing to file: {full_path}")
         # Check if the path is a directory, and throw an error if it is
         if os.path.isdir(full_path):
             return f"Error: '{full_path}' is a directory, not a file", 400

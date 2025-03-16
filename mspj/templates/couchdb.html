@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CouchDB Documents</title>
+</head>
+<body>
+    <h1>Documents in CouchDB</h1>
+    <ul>
+        {% for doc in documents %}
+        <li>Document ID: {{ doc.id }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Update Document</h2>
+    <form method="post" action="/couchdb/update">
+        <input type="text" name="doc_id" placeholder="Document ID"><br>
+        <textarea name="new_data" rows="5" cols="50" placeholder='{"key": "value"}'></textarea><br>
+        <input type="submit" value="Update Document">
+    </form>
+
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>

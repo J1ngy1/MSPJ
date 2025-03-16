@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatGPT Configuration Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .yaml-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .yaml-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 18px;  /* Increase overall font size */
+        }
+        .yaml-item a {
+            font-size: 18px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .yaml-item a:hover {
+            text-decoration: underline;
+        }
+        .yaml-path {
+            font-size: 16px;  /* Bigger font size for the full path */
+            color: gray;
+            margin-left: 10px;  /* Adds space between the file name and the path */
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end; /* Align buttons to the right */
+        }
+        .button {
+            background-color: #007bff;
+            color: white !important;  /* Ensure text is white */
+            padding: 8px 16px;  /* Adjust padding for better visibility */
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            border: none;
+        }
+        .button:hover {
+            background-color: #0056b3;
+            color: white; /* Ensure text remains white on hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>ChatGPT Configuration Assistant</h1>
+
+    <ul class="yaml-list">
+        {% for relative_path, shortened_path in yaml_files_info %}
+        <li class="yaml-item">
+            <div>
+                <!-- Display relative path as clickable link, followed by the path after the base directory -->
+                <a href="{{ url_for('view_yaml', file_path=relative_path) }}">{{ relative_path }}</a>
+                <span class="yaml-path"> - {{ shortened_path }}</span>
+            </div>
+
+            <!-- Button group for viewing history and viewing YAML file -->
+            <div class="button-group">
+                <a href="{{ url_for('view_yaml', file_path=relative_path) }}" class="button">View/Edit</a>
+                <a href="{{ url_for('view_history', file_path=relative_path) }}" class="button">History</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

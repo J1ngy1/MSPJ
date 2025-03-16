@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ file_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+            color: #333;
+        }
+        .config-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 30px;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .yaml-content {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            color: #333;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        button {
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="config-container">
+        <h1>{{ file_name }}</h1>
+
+        <div class="yaml-content">
+            <pre>{{ yaml_content }}</pre>
+        </div>
+
+        <!-- Description input form -->
+        <form method="POST" action="{{ url_for('generate_config_from_view', file_path=file_name) }}">
+            <label for="description">Enter description for configuration change:</label>
+            <textarea name="description" placeholder="E.g., Add a new service, modify ports, etc."></textarea>
+            <button type="submit">Generate Configuration</button>
+        </form>
+
+        <a href="{{ url_for('home') }}" class="back-link">Home</a>
+    </div>
+</body>
+</html>

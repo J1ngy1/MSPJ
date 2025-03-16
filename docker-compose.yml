@@ -14,6 +14,7 @@ services:
       dockerfile: Dockerfile-couchdb
     volumes:
       - ./couchdb/:/tmp/
+      - .:/app
     environment:
       - "COUCHDB_USER=imo"
       - "COUCHDB_PASSWORD=123456"
@@ -31,13 +32,14 @@ services:
       start_period: 10s
 
   envoy-controller:
-    image: envoy_controller:20240221
+    image: envoy_controller:20241018
     depends_on:
       couchdb:
         condition: service_healthy
     volumes:
       - ./controller/controller.crt:/controller/controller.crt
       - ./controller/controller.key:/controller/controller.key
+      - .:/app
     ports:
       - "18000:18000"
       - "19000:19000"
@@ -63,6 +65,11 @@ services:
       - ./envoy-dynamic/envoy-client/envoy.yaml:/etc/envoy/envoy.yaml
       - ./envoy-dynamic/envoy-client/cert.pem:/etc/envoy/cert.pem
       - ./envoy-dynamic/envoy-client/key.pem:/etc/envoy/key.pem
+      - .:/app
+
+      # - ./envoy-static/envoy-client/envoy.yaml:/etc/envoy/envoy.yaml
+      # - ./envoy-static/envoy-client/cert.pem:/etc/envoy/cert.pem
+      # - ./envoy-static/envoy-client/key.pem:/etc/envoy/key.pem
     ports:
       - "9901:9901"
       - "10000:10000"
@@ -83,6 +90,11 @@ services:
       - ./envoy-dynamic/envoy-server/envoy.yaml:/etc/envoy/envoy.yaml
       - ./envoy-dynamic/envoy-server/cert.pem:/etc/envoy/cert.pem
       - ./envoy-dynamic/envoy-server/key.pem:/etc/envoy/key.pem
+      - .:/app
+
+      # - ./envoy-static/envoy-server/envoy.yaml:/etc/envoy/envoy.yaml
+      # - ./envoy-static/envoy-server/cert.pem:/etc/envoy/cert.pem
+      # - ./envoy-static/envoy-server/key.pem:/etc/envoy/key.pem
     ports:
       - "9001:9001"
       - "18080:18080"
@@ -100,10 +112,12 @@ services:
       - ./nginx/testFiles/:/usr/share/nginx/html/
       - ./nginx/cert.pem:/etc/nginx/cert.pem
       - ./nginx/key.pem:/etc/nginx/key.pem
+      - .:/app
     ports:
       - "443:443"
     networks:
       - app-network
+
       # - server_network
 
 
@@ -111,6 +125,7 @@ services:
     image: prom/prometheus:latest
     volumes:
       - ./prometheus_otel.yml:/etc/prometheus/prometheus.yml
+      - .:/app
     ports:
       - "9090:9090"
     networks:
@@ -124,6 +139,7 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+      - .:/app
     depends_on:
       - prometheus
     networks:
@@ -143,6 +159,7 @@ services:
     logging: *logging
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
+      - .:/app
     networks:
       - app-network
 
@@ -162,6 +179,21 @@ services:
     networks:
       - app-network
       # - client_network
+      
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile-flask  # 让 Flask 使用专属 Dockerfile
+    ports:
+      - "5000:5000"  # 映射 Flask 端口
+    volumes:
+      - ./mspj:/app  # 让本地 MSPJ 代码和容器同步
+    environment:
+      - FLASK_ENV=development  # 让 Flask 支持热重载
+    working_dir: /app  # 设定 Flask 运行目录
+    command: flask run --host=0.0.0.0 --port=5000  # 运行 Flask
+    networks:
+      - app-network
 
 
   # linux-router:

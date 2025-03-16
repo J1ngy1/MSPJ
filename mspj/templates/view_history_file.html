@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Compare Source and History Files: {{ file_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .file-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .file-box {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .file-box h2 {
+            font-size: 18px;
+            color: #333;
+            margin-top: 0;
+        }
+        .file-content {
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.6em;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .highlight-add {
+            background-color: #d4fcbc;
+        }
+        .highlight-del {
+            background-color: #fbb6c2;
+        }
+        .restore-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            width: 200px;
+            text-align: center;
+        }
+        .restore-button:hover {
+            background-color: #218838;
+        }
+        .back-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 10px auto;
+            width: 150px;
+            text-align: center;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Compare Source and History Files</h1>
+
+    <div class="file-container">
+        <div class="file-box">
+            <h2>History File: {{ history_file_name }}</h2>
+            <div class="file-content">
+                {{ history_content | safe }}
+            </div>
+        </div>
+
+        <div class="file-box">
+            <h2>Current File: {{ file_name }}</h2>
+            <div class="file-content">
+                {{ source_content | safe }}
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('restore_version', file_path=file_name, version=history_file_name) }}">
+        <button type="submit" class="restore-button">Restore</button>
+    </form>
+
+    <!-- Go Back Button -->
+    <button onclick="history.back()" class="back-button">Cancel</button>
+
+</body>
+</html>

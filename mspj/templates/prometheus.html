@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prometheus Metrics</title>
+</head>
+<body>
+    <h1>Prometheus Metrics</h1>
+    <ul>
+        {% for metric in metrics %}
+        <li>{{ metric.metric.instance }}: {{ metric.value[1] }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>

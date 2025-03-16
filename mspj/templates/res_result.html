@@ -1,0 +1,4 @@
+<form method="POST" action="{{ url_for('restore_version', file_path=file_name) }}">
+    <input type="hidden" name="version" value="{{ history_file }}"> <!-- Set to the actual version file name -->
+    <button type="submit" class="restore-button">Restore to This Version</button>
+</form>

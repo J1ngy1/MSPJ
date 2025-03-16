@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>List of YAML Files</title>
+</head>
+<body>
+    <h1>YAML Files</h1>
+    <ul>
+        {% for file in yaml_files %}
+            <li><a href="{{ url_for('view_yaml', file_path=file) }}">{{ file }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

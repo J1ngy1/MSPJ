@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatGPT Assistant</title>
+</head>
+<body>
+    <h1>ChatGPT Network Assistant</h1>
+    <form method="post">
+        <textarea name="user_input" rows="5" cols="50" placeholder="Ask a question..."></textarea><br>
+        <input type="submit" value="Get Response">
+    </form>
+    {% if response %}
+        <h2>Assistant's Response:</h2>
+        <p>{{ response }}</p>
+    {% endif %}
+    <a href="{{ url_for('home') }}">Home</a>
+</body>
+</html>

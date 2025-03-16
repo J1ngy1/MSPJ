@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Compare and Confirm Update</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        .config-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .config-box {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+        }
+        .config-box h2 {
+            font-size: 20px;
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .config-content {
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.6em;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .highlight-add {
+            background-color: #d4fcbc;
+        }
+        .highlight-del {
+            background-color: #fbb6c2;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            font-family: monospace;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+            display: none;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center; /* Centers the buttons */
+            gap: 20px; /* Adds space between the buttons */
+            margin-top: 20px;
+        }
+        .buttons button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .buttons button:first-child {
+            background-color: #28a745;
+            color: white;
+        }
+        .buttons button:first-child:hover {
+            background-color: #218838;
+        }
+        .buttons button:last-child {
+            background-color: #dc3545;
+            color: white;
+        }
+        .buttons button:last-child:hover {
+            background-color: #c82333;
+        }
+        #toggle-button {
+            display: block;
+            margin: 20px auto;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #toggle-button:hover {
+            background-color: #0056b3;
+        }
+        .version-form {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .version-form input {
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 60%;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        // Toggle between highlighted and editable views
+        function toggleEditMode() {
+            const highlightBox = document.getElementById("highlighted-view");
+            const editBox = document.getElementById("edit-view");
+            const toggleButton = document.getElementById("toggle-button");
+
+            if (highlightBox.style.display === "none") {
+                highlightBox.style.display = "block";
+                editBox.style.display = "none";
+                toggleButton.innerHTML = "Edit Configuration";
+            } else {
+                highlightBox.style.display = "none";
+                editBox.style.display = "block";
+                toggleButton.innerHTML = "Show Differences";
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Compare and Confirm Update</h1>
+
+    <form method="post" action="{{ url_for('confirm_update') }}">
+        <div class="config-container">
+            <!-- Current Configuration (Display only, non-editable) -->
+            <div class="config-box">
+                <h2>Current Configuration</h2>
+                <div class="config-content">{{ current_config | safe }}</div>
+            </div>
+
+            <!-- Toggleable New Configuration -->
+            <div class="config-box">
+                <h2>Updated Configuration</h2>
+
+                <!-- Highlighted Differences View (Default) -->
+                <div id="highlighted-view" class="config-content">
+                    {{ highlighted_new_config | trim | safe }}  <!-- Trim to remove extra whitespace -->
+                </div>
+
+                <!-- Editable View (Hidden by Default) -->
+                <textarea id="edit-view" name="new_config">{{ new_config | trim | safe }}</textarea>
+            </div>
+        </div>
+
+        <!-- Button to toggle between highlighted and editable views -->
+        <button type="button" id="toggle-button" onclick="toggleEditMode()">Edit Configuration</button>
+
+        <div class="version-form">
+            <input type="hidden" name="file_name" value="{{ file_name }}">
+            <label for="version_name">Name the history version:</label>
+            <input type="text" name="version_name" placeholder="Enter version name" required>
+        </div>
+
+        <!-- Confirm or Cancel Configuration Update -->
+        <div class="buttons">
+            <button type="submit" name="confirm" value="Yes">Apply</button>
+            <button type="submit" name="confirm" value="No">Cancel</button>
+        </div>
+    </form>
+
+    <a href="{{ url_for('home') }}" style="text-align:center;display:block;margin-top:30px;color:#007bff;">Home</a>
+</body>
+</html>

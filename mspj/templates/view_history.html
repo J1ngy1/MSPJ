@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>History for {{ file_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .history-list {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .history-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between; /* Aligns content on both sides */
+            align-items: center; /* Centers items vertically */
+        }
+        .history-item a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .history-item a:hover {
+            text-decoration: underline;
+        }
+        .restore-button {
+            background-color: #28a745; /* Green for restore */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .restore-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>History for {{ file_name }}</h1>
+    <div class="history-list">
+        {% if history_files %}
+            {% for history_file in history_files %}
+            <div class="history-item">
+                <span>{{ history_file }}</span>
+                <div>
+                    <a href="{{ url_for('view_history_file', file_path=file_name, version=history_file) }}">View</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No history available for this file.</p>
+        {% endif %}
+    </div>
+    <a href="{{ url_for('home') }}" style="text-align:center;display:block;margin-top:30px;color:#007bff;">Home</a>
+</body>
+</html>

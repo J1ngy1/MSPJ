@@ -12,7 +12,8 @@ app = Flask(__name__)
 
 OPENAI_API_KEY  = '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'
 
-DOCKER_COMPOSE_PATH = '/Users/shu/Downloads/IMO-Sidecar-Networking-main/'
+DOCKER_COMPOSE_PATH = os.getenv('DOCKER_COMPOSE_PATH', '/app/')
+
 
 
 def save_config_history(config):
@@ -27,6 +28,35 @@ def save_config_history(config):
 
 @app.route('/')
 def home():
+    try:
+        # 定义 YAML 搜索目录
+        directory = os.getenv('DOCKER_COMPOSE_PATH', '/app/')
+        history_dir = os.path.join(directory, 'history')
+
+        print(f"✅ [DEBUG] DOCKER_COMPOSE_PATH: {directory}")  # 确保路径正确
+        print(f"✅ [DEBUG] Looking for YAML files in {directory}...")
+
+        # 查找所有 YAML 文件（递归搜索）
+        yaml_files = glob.glob(os.path.join(directory, '**/*.yml'), recursive=True)
+        yaml_files += glob.glob(os.path.join(directory, '**/*.yaml'), recursive=True)
+
+        print(f"✅ [DEBUG] Found YAML files: {yaml_files}")  # 确保找到了 YAML
+
+        # 过滤掉 history 目录中的 YAML 文件
+        yaml_files = [file for file in yaml_files if history_dir not in file]
+
+        # 生成 YAML 文件信息
+        yaml_files_info = [
+            (os.path.relpath(file, directory), os.path.relpath(file, directory)) for file in yaml_files
+        ]
+
+        print(f"✅ [DEBUG] Final YAML list: {yaml_files_info}")
+
+        return render_template('home.html', yaml_files_info=yaml_files_info)
+    except Exception as e:
+        print(f"❌ [ERROR] Error listing YAML files: {str(e)}")
+        return f"Error listing YAML files: {str(e)}"
+
     try:
         # Define the directory to search for YAML files
         directory = os.path.dirname(DOCKER_COMPOSE_PATH)

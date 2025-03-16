@@ -187,10 +187,11 @@ services:
     ports:
       - "5000:5000"  # 映射 Flask 端口
     volumes:
-      - ./mspj:/app  # 让本地 MSPJ 代码和容器同步
+      - .:/app  # 让本地 MSPJ 代码和容器同步
     environment:
-      - FLASK_ENV=development  # 让 Flask 支持热重载
-    working_dir: /app  # 设定 Flask 运行目录
+      - FLASK_ENV=development
+      - DOCKER_COMPOSE_PATH=/app  # 让 Flask 支持热重载
+    working_dir: /app/mspj  # 设定 Flask 运行目录
     command: flask run --host=0.0.0.0 --port=5000  # 运行 Flask
     networks:
       - app-network

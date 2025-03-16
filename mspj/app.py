@@ -57,28 +57,7 @@ def home():
         print(f"❌ [ERROR] Error listing YAML files: {str(e)}")
         return f"Error listing YAML files: {str(e)}"
 
-    try:
-        # Define the directory to search for YAML files
-        directory = os.path.dirname(DOCKER_COMPOSE_PATH)
-        history_dir = os.path.join(directory, 'history')
-
-        # Find all .yml and .yaml files recursively, excluding the history directory
-        yaml_files = glob.glob(os.path.join(directory, '**/*.yml'), recursive=True)
-        yaml_files += glob.glob(os.path.join(directory, '**/*.yaml'), recursive=True)
-
-        # Filter out any files from the history directory
-        yaml_files = [file for file in yaml_files if history_dir not in file]
-
-        # Create a list of tuples with both full path (after base directory) and relative path
-        yaml_files_info = [
-            (os.path.relpath(file, directory), os.path.relpath(file, directory)) for file in yaml_files
-        ]
-
-        return render_template('home.html', yaml_files_info=yaml_files_info)
-    except Exception as e:
-        return f"Error listing YAML files: {str(e)}"
-
-
+  
 @app.route('/generate-config-from-view/<path:file_path>', methods=['POST'])
 def generate_config_from_view(file_path):
     try:
@@ -114,11 +93,17 @@ def generate_config_from_view(file_path):
 @app.route('/view-yaml/<path:file_path>', methods=['GET', 'POST'])
 def view_yaml(file_path):
     try:
-        # Define the directory to search for YAML files
-        directory = os.path.dirname(DOCKER_COMPOSE_PATH)
+        directory = os.getenv('DOCKER_COMPOSE_PATH', '/app/')
 
-        # Construct the full path by joining the directory and the relative file path
-        full_path = os.path.join(directory, file_path)
+        # Construct the correct full path
+        full_path = os.path.join(directory, file_path.lstrip("/"))  # Strip leading '/' to avoid absolute paths
+
+        print(f"✅ [DEBUG] Full path for YAML file: {full_path}")  # Debugging
+
+        # Check if the file exists before trying to open it
+        if not os.path.exists(full_path):
+            print(f"❌ [ERROR] File not found: {full_path}")
+            return f"Error: File '{file_path}' not found."
 
         # Read the content of the selected YAML file
         with open(full_path, 'r') as f:

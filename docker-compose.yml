@@ -183,16 +183,18 @@ services:
   flask-app:
     build:
       context: .
-      dockerfile: Dockerfile-flask  # 让 Flask 使用专属 Dockerfile
+      dockerfile: Dockerfile-flask 
     ports:
-      - "5000:5000"  # 映射 Flask 端口
+      - "5000:5000" 
     volumes:
-      - .:/app  # 让本地 MSPJ 代码和容器同步
+      - .:/app  
+      - /var/run/docker.sock:/var/run/docker.sock 
+      - /usr/bin/docker:/usr/bin/docker 
     environment:
       - FLASK_ENV=development
-      - DOCKER_COMPOSE_PATH=/app  # 让 Flask 支持热重载
-    working_dir: /app/mspj  # 设定 Flask 运行目录
-    command: flask run --host=0.0.0.0 --port=5000  # 运行 Flask
+      - DOCKER_COMPOSE_PATH=/app  
+    working_dir: /app/mspj 
+    command: flask run --host=0.0.0.0 --port=5000  
     networks:
       - app-network
 

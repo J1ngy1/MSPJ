@@ -53,7 +53,7 @@
                                                     "envoy_grpc": {
                                                         "cluster_name": "jaeger_stats"
                                                     },
-                                                    "timeout": "1s"
+                                                    "timeout": "10s"
                                                 },
                                                 "service_name": "envoy_client"
                                             }

@@ -5,6 +5,7 @@ import yaml
 import glob
 import difflib
 from datetime import datetime
+import subprocess
 
 
 
@@ -29,23 +30,19 @@ def save_config_history(config):
 @app.route('/')
 def home():
     try:
-        # 定义 YAML 搜索目录
         directory = os.getenv('DOCKER_COMPOSE_PATH', '/app/')
         history_dir = os.path.join(directory, 'history')
 
-        print(f"✅ [DEBUG] DOCKER_COMPOSE_PATH: {directory}")  # 确保路径正确
+        print(f"✅ [DEBUG] DOCKER_COMPOSE_PATH: {directory}")  
         print(f"✅ [DEBUG] Looking for YAML files in {directory}...")
 
-        # 查找所有 YAML 文件（递归搜索）
         yaml_files = glob.glob(os.path.join(directory, '**/*.yml'), recursive=True)
         yaml_files += glob.glob(os.path.join(directory, '**/*.yaml'), recursive=True)
 
-        print(f"✅ [DEBUG] Found YAML files: {yaml_files}")  # 确保找到了 YAML
+        print(f"✅ [DEBUG] Found YAML files: {yaml_files}") 
 
-        # 过滤掉 history 目录中的 YAML 文件
         yaml_files = [file for file in yaml_files if history_dir not in file]
 
-        # 生成 YAML 文件信息
         yaml_files_info = [
             (os.path.relpath(file, directory), os.path.relpath(file, directory)) for file in yaml_files
         ]
@@ -58,7 +55,6 @@ def home():
         return f"Error listing YAML files: {str(e)}"
     
 def get_full_path(file_path):
-    """ 确保所有文件路径相对于 /app/ 目录 """
     return os.path.join(DOCKER_COMPOSE_PATH, file_path.lstrip("/"))
 
   
@@ -511,6 +507,21 @@ def docker_status():
     status = check_docker_status()  # Get the Docker status
     return render_template('docker_status.html', status=status)
 
+@app.route('/rebuild-docker', methods=['POST'])
+def rebuild_docker():
+    try:
+        print("✅ [DEBUG] Stopping and removing old containers...")
+        subprocess.run(["docker", "compose", "down"], check=True)
 
+        print("✅ [DEBUG] Rebuilding Docker containers...")
+        subprocess.run(["docker", "compose", "build"], check=True)
+
+        print("✅ [DEBUG] Starting new containers...")
+        subprocess.run(["docker", "compose", "up", "-d"], check=True)
+
+        return redirect(url_for('home'))  
+    except subprocess.CalledProcessError as e:
+        print(f"❌ [ERROR] Docker rebuild failed: {e}")
+        return f"Error rebuilding Docker: {str(e)}"
 if __name__ == '__main__':
     app.run(debug=True)

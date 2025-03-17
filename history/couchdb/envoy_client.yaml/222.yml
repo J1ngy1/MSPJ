@@ -44,7 +44,7 @@ static_resources:
                 grpc_service:
                   envoy_grpc:
                     cluster_name: jaeger_stats
-                  timeout: 10s
+                  timeout: 1s
                 service_name: envoy_client
           access_log:
           - name: envoy.access_loggers.stdout

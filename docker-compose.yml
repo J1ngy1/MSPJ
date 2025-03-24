@@ -179,6 +179,8 @@ services:
     networks:
       - app-network
       # - client_network
+    ports:
+      - "5055:5055"
       
   flask-app:
     build:

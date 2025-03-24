@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Hey Visualizer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .card { border: 1px solid #ccc; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 2px 2px 5px #eee; }
+        .chart-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        canvas { width: 400px !important; height: 300px !important; }
+    </style>
+</head>
+<body>
+    <h2>Hey Visualizer</h2>
+
+    <label>URL:</label>
+    <input id="urlInput" type="text" value="https://localhost:10000/usdeclar.txt" size="60"><br><br>
+    <label>Requests (-n):</label>
+    <input id="nInput" type="number" value="100"><br><br>
+    <label>Concurrency (-c):</label>
+    <input id="cInput" type="number" value="10"><br><br>
+    <button onclick="runHey()">Run Test</button>
+
+    <div id="resultContainer"></div>
+
+    <script>
+        let testCounter = 0;
+
+        function runHey() {
+            const url = document.getElementById("urlInput").value;
+            const n = document.getElementById("nInput").value;
+            const c = document.getElementById("cInput").value;
+
+            fetch("/run-hey", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url, n, c })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                testCounter += 1;
+
+                // Create a new card
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `
+                    <h3>Test #${testCounter}</h3>
+                    <p><b>URL:</b> ${url}, <b>-n:</b> ${n}, <b>-c:</b> ${c}</p>
+                    <div class="chart-container">
+                        <div>
+                            <h4>Histogram</h4>
+                            <canvas id="hist-${testCounter}"></canvas>
+                        </div>
+                        <div>
+                            <h4>Latency</h4>
+                            <canvas id="latency-${testCounter}"></canvas>
+                        </div>
+                        <div>
+                            <h4>Status Code</h4>
+                            <canvas id="status-${testCounter}"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Summary</h4>
+                        <ul id="summary-${testCounter}"></ul>
+                    </div>
+                `;
+
+                document.getElementById("resultContainer").prepend(card); // add on top
+
+                // Draw charts
+                drawHistogram(`hist-${testCounter}`, data.histogram);
+                drawLatency(`latency-${testCounter}`, data.latency);
+                drawStatus(`status-${testCounter}`, data.status_codes);
+                showSummary(`summary-${testCounter}`, data.summary);
+            });
+        }
+
+        function drawHistogram(canvasId, data) {
+            const ctx = document.getElementById(canvasId);
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: "Requests",
+                        data: Object.values(data),
+                        backgroundColor: "rgba(75, 192, 192, 0.6)"
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function drawLatency(canvasId, data) {
+            const ctx = document.getElementById(canvasId);
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: Object.keys(data).map(p => p + "%"),
+                    datasets: [{
+                        label: "Latency (s)",
+                        data: Object.values(data),
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        fill: false
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function drawStatus(canvasId, data) {
+            const ctx = document.getElementById(canvasId);
+            new Chart(ctx, {
+                type: "pie",
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: ["#36A2EB", "#FF6384", "#FFCE56", "#4BC0C0"]
+                    }]
+                }
+            });
+        }
+
+        function showSummary(summaryId, s) {
+            const ul = document.getElementById(summaryId);
+            ul.innerHTML = `
+                <li><b>Average:</b> ${s.average}s</li>
+                <li><b>Fastest:</b> ${s.fastest}s</li>
+                <li><b>Slowest:</b> ${s.slowest}s</li>
+                <li><b>Requests/sec:</b> ${s.rps}</li>
+                <li><b>Total Time:</b> ${s.total}s</li>
+                <li><b>Total Data:</b> ${s.total_data}</li>
+                <li><b>Size/Request:</b> ${s.size_per_request}</li>
+            `;
+        }
+    </script>
+</body>
+</html>

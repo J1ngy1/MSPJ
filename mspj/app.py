@@ -11,7 +11,7 @@ import subprocess
 
 app = Flask(__name__)
 
-OPENAI_API_KEY  = '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'
+OPENAI_API_KEY  = ''
 
 DOCKER_COMPOSE_PATH = os.getenv('DOCKER_COMPOSE_PATH', '/app/')
 
